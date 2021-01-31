@@ -1,0 +1,116 @@
+---
+title: "Hamlet Flex"
+author: "Catherine Hayden"
+date: "2/12/2020"
+output: rmdformats::material
+---
+
+```{r setup, error TRUE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidyverse")
+library("tidytext")
+library("tokenizers")
+```
+
+```{r}
+hamlet_flex <- readLines("./hamlet.txt")
+act_1 <- hamlet_flex[4:1230]
+act_2 <- hamlet_flex[1231:2231]
+act_3 <- hamlet_flex[2232:3516]
+act_4 <- hamlet_flex[3517:4492]
+act_5 <- hamlet_flex[4493:5568] 
+
+positive <- get_sentiments("bing") %>%
+  filter(sentiment == "positive")
+negative <- get_sentiments("bing") %>%
+  filter(sentiment == "negative")
+
+
+```
+
+
+
+```{r}
+word_by_word <- function(x){
+  df <- x %>% 
+    str_c(collapse = " ") %>% 
+    tokenize_words() %>% 
+    data.frame()}
+
+```
+
+
+```{r}
+words_1 <- word_by_word(act_1)
+names(words_1) <- "word"
+
+words_2 <- word_by_word(act_2)
+names(words_2) <- "word"
+
+words_3 <- word_by_word(act_3)
+names(words_3) <- "word"
+words_4 <- word_by_word(act_4)
+names(words_4) <- "word"
+
+words_5 <-word_by_word(act_5)
+names(words_5) <- "word"
+```
+
+```{r}
+positive_n <- function(df){
+  dfnew <- df %>% 
+    semi_join(positive) %>% 
+    count(word, sort = TRUE)
+  dfnew %>% 
+    summarize_at(vars(n), funs(sum))
+}
+
+negative_n <- function(df){
+   dfnew <- df %>% 
+    semi_join(negative) %>% 
+    count(word, sort = TRUE) 
+   dfnew%>% 
+    summarize_at(vars(n), funs(sum))
+}
+```
+
+```{r}
+positive_1 <- positive_n(words_1)
+negative_1 <- negative_n(words_1)
+
+positive_2 <- positive_n(words_2)
+negative_2 <- negative_n(words_2)
+
+
+positive_3 <- positive_n(words_3)
+negative_3 <- negative_n(words_3)
+
+positive_4 <- positive_n(words_4)
+negative_4 <- negative_n(words_4)
+
+positive_5 <- positive_n(words_5)
+negative_5 <- negative_n(words_5)
+
+```
+
+
+
+```{r}
+
+sentiment_analysis <- data_frame(act = c("ACT 1", "ACT 1", "ACT 2", "ACT 2", "ACT 3", "ACT 3", "ACT 4", "ACT 4", "ACT 5", "ACT 5"), 
+                                 sentiment = c("positive", "negative", "positive", "negative", "positive", "negative", "positive", "negative", "positive", "negative"), 
+                                 count = c(positive_1$n, negative_1$n, positive_2$n, negative_2$n, positive_3$n, negative_3$n, positive_4$n, negative_4$n, positive_5$n, negative_5$n))
+
+sentiment_analysis %>% 
+  ggplot(mapping = aes(x = act, y = count, fill = sentiment)) +
+  geom_col(position = "dodge") +
+  labs(title = "Text Sentiment of Hamlet by Act") +
+  ylab("Frequency") +
+  xlab("") +
+  theme_light()
+
+```
+
+
+The vast majority of Shakespeare's Hamlet employs more negative sentiments than positive sentiments, with Act 2 as the exception.
+

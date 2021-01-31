@@ -1,0 +1,49 @@
+---
+title: "Hamletflex"
+author: "Catherine Hayden"
+date: "2/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+act_1<- act_1 %>% 
+  str_c(collapse = " ") %>% 
+  tokenize_words() %>% 
+  data.frame()
+
+names(act_1) <- "word"
+
+act_1_pos <- act_1 %>% 
+  semi_join(positive) %>% 
+  count(word, sort = TRUE)
+
+act_1_pos %>% 
+  summarise_at(vars(n), sum)
+
+```
+
+```{r}
+positive_n <- function(df){
+  dfnew <- df %>% 
+    semi_join(positive) %>% 
+    count(word, sort = TRUE)
+  dfnew %>% 
+    summarize_at(vars(n), funs(sum))
+}
+
+negative_n <- function(df){
+   dfnew <- df %>% 
+    semi_join(negative) %>% 
+    count(word, sort = TRUE) 
+   dfnew%>% 
+    summarize_at(vars(n), funs(sum))
+}
+  
+positive_n(words_1)
+```
+
